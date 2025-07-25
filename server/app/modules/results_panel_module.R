@@ -6,17 +6,19 @@ results_panel_ui <- function(id) {
     ns <- NS(id)
 
     tagList(
-        # Results panel
+        # Results panel with bslib card
         conditionalPanel(
             condition = paste0("output['", ns("show_results"), "'] == true"),
-            div(
-                h4("📈 Hasil Analisis"),
-                verbatimTextOutput(ns("summary")),
-                hr(),
-                h4("📊 Visualisasi"),
-                fluidRow(
-                    column(6, plotOutput(ns("main_plot"), height = "300px")),
-                    column(6, plotOutput(ns("diff_plot"), height = "300px"))
+            bslib::card(
+                bslib::card_header("📈 Hasil Analisis"),
+                bslib::card_body(
+                    verbatimTextOutput(ns("summary")),
+                    hr(),
+                    h4("📊 Visualisasi"),
+                    fluidRow(
+                        column(6, plotOutput(ns("main_plot"), height = "300px")),
+                        column(6, plotOutput(ns("diff_plot"), height = "300px"))
+                    )
                 )
             )
         ),

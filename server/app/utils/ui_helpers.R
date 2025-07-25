@@ -8,8 +8,17 @@
 #' @param style_class CSS style class
 #' @return Div element
 create_info_box <- function(icon, title, content, style_class = "info-box") {
+    css_class <- switch(style_class,
+        "info-box" = "info-box-light",
+        "warning-box" = "warning-box-light",
+        "note-box" = "note-box-light",
+        "data-info-box" = "data-info-box-light",
+        "info-box-light"
+    )
+
     div(
-        style = get_info_box_style(style_class),
+        class = css_class,
+        style = "padding: 8px; border-radius: 4px; border-left: 4px solid; margin: 5px 0;",
         HTML(paste0("<strong>", icon, " ", title, ":</strong><br/>", content))
     )
 }
@@ -19,10 +28,10 @@ create_info_box <- function(icon, title, content, style_class = "info-box") {
 #' @return CSS style string
 get_info_box_style <- function(style_class) {
     switch(style_class,
-        "info-box" = "background-color: #d4edda; padding: 8px; border: 1px solid #c3e6cb; border-radius: 4px;",
-        "warning-box" = "background-color: #fff3cd; padding: 8px; border-radius: 4px; border-left: 4px solid #ffc107; margin: 5px 0;",
-        "note-box" = "background-color: #d1ecf1; padding: 8px; border-radius: 4px; border-left: 4px solid #17a2b8; margin: 5px 0;",
-        "data-info-box" = "background-color: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 12px; border-left: 4px solid #007bff;"
+        "info-box" = "padding: 8px; border-radius: 4px; border: 1px solid; margin: 5px 0; class: 'info-box-light';",
+        "warning-box" = "padding: 8px; border-radius: 4px; border-left: 4px solid; margin: 5px 0; class: 'warning-box-light';",
+        "note-box" = "padding: 8px; border-radius: 4px; border-left: 4px solid; margin: 5px 0; class: 'note-box-light';",
+        "data-info-box" = "padding: 10px; border-radius: 5px; font-size: 12px; border-left: 4px solid; margin: 5px 0; class: 'data-info-box-light';"
     )
 }
 
@@ -50,26 +59,29 @@ create_test_selection <- function(input_id, selected = "sign") {
 #' @return Div containing file upload UI
 create_file_upload_section <- function(file_input_id, clear_button_id, download_button_id, file_status_output_id) {
     div(
+        class = "file-input-container",
         h5("📁 Upload File Data:"),
-        
-        fileInput(file_input_id, NULL, 
-                accept = c(".csv", ".xls", ".xlsx", ".sav"),
-                buttonLabel = "Browse..."),
+        fileInput(file_input_id, NULL,
+            accept = c(".csv", ".xls", ".xlsx", ".sav"),
+            buttonLabel = "Browse..."
+        ),
 
         # Buttons for file management
-        div(class = "row",
-            div(class = "col-12 col-md-6 mb-2 px-2",
+        div(
+            class = "row",
+            div(
+                class = "col-12 col-md-6 mb-2 px-2",
                 downloadButton(download_button_id, "Download Template CSV",
                     class = "btn btn-success btn-sm w-100 text-truncate"
                 )
             ),
-            div(class = "col-12 col-md-6 mb-2 px-2",
+            div(
+                class = "col-12 col-md-6 mb-2 px-2",
                 actionButton(clear_button_id, "🗑️ Clear File",
                     class = "btn btn-warning btn-sm w-100"
                 )
             )
         ),
-        
         helpText("Format: File CSV, Excel (.xlsx/.xls), atau SPSS (.sav) dengan 2 kolom data numerik dan 5 baris"),
         br()
     )
@@ -163,18 +175,16 @@ Alternatif nonparametrik dari uji t dua sampel independen.",
 #' @return Div containing emission data selection UI
 create_emission_data_section <- function(data_type_id, analysis_type_id, country1_id, country2_id, year1_id, year2_id, use_emission_id) {
     div(
-        h6("🌍 Data Emisi Gas Rumah Kaca", style = "color: #28a745; font-weight: bold;"),
-        
+        h6("🌍 Data Emisi Gas Rumah Kaca", style = "font-weight: bold;"),
         checkboxInput(use_emission_id, "Gunakan Data Emisi", value = FALSE),
-        
         conditionalPanel(
             condition = paste0("input['", use_emission_id, "']"),
-            
+
             # Data type selection
             selectizeInput(data_type_id, "Jenis Data Emisi:",
                 choices = list(
                     "Nilai emisi CH4" = "CH4",
-                    "Nilai emisi CO2" = "CO2", 
+                    "Nilai emisi CO2" = "CO2",
                     "Nilai emisi N2O" = "N2O",
                     "Nilai total emisi gas rumah kaca" = "TOTAL"
                 ),
@@ -184,7 +194,7 @@ create_emission_data_section <- function(data_type_id, analysis_type_id, country
                     onInitialize = I('function() { this.setValue(""); }')
                 )
             ),
-            
+
             # Analysis type selection
             conditionalPanel(
                 condition = paste0("input['", data_type_id, "'] != ''"),
@@ -196,13 +206,14 @@ create_emission_data_section <- function(data_type_id, analysis_type_id, country
                     selected = "year_comparison"
                 )
             ),
-            
+
             # Year comparison options
             conditionalPanel(
                 condition = paste0("input['", data_type_id, "'] != '' && input['", analysis_type_id, "'] == 'year_comparison'"),
-                h6("📅 Perbandingan Tahun:", style = "color: #007bff;"),
+                h6("📅 Perbandingan Tahun:"),
                 fluidRow(
-                    column(6,
+                    column(
+                        6,
                         selectizeInput(year1_id, "Tahun 1:",
                             choices = c(),
                             selected = NULL,
@@ -212,7 +223,8 @@ create_emission_data_section <- function(data_type_id, analysis_type_id, country
                             )
                         )
                     ),
-                    column(6,
+                    column(
+                        6,
                         selectizeInput(year2_id, "Tahun 2:",
                             choices = c(),
                             selected = NULL,
@@ -225,13 +237,14 @@ create_emission_data_section <- function(data_type_id, analysis_type_id, country
                 ),
                 helpText("Membandingkan emisi semua negara antara dua tahun yang dipilih")
             ),
-            
+
             # Country comparison options
             conditionalPanel(
                 condition = paste0("input['", data_type_id, "'] != '' && input['", analysis_type_id, "'] == 'country_comparison'"),
-                h6("🏛️ Perbandingan Negara:", style = "color: #007bff;"),
+                h6("🏛️ Perbandingan Negara:"),
                 fluidRow(
-                    column(6,
+                    column(
+                        6,
                         selectizeInput(country1_id, "Negara 1:",
                             choices = c(),
                             selected = NULL,
@@ -242,7 +255,8 @@ create_emission_data_section <- function(data_type_id, analysis_type_id, country
                             )
                         )
                     ),
-                    column(6,
+                    column(
+                        6,
                         selectizeInput(country2_id, "Negara 2:",
                             choices = c(),
                             selected = NULL,
@@ -266,14 +280,14 @@ create_emission_data_section <- function(data_type_id, analysis_type_id, country
 create_results_placeholder <- function() {
     div(
         style = "text-align: center; margin-top: 100px;",
-        h4("⏳ Siap untuk Analisis", style = "color: #666;"),
-        p("Unggah file data (CSV, Excel, atau SPSS) atau masukkan data secara manual." , style = "color: #999;"),
-        p("Pilih jenis uji statistik yang diinginkan dan klik 'Jalankan Uji'.", style = "color: #999;"),
-        p("Anda juga dapat menganalisis data emisi gas rumah kaca dengan memilih opsi 'Gunakan Data Emisi'.", style = "color: #999;"),
-        p("Pastikan data yang diinput minimal terdiri dari 2 kolom numerik dan 5 baris untuk hasil analisis yang valid.", style = "color: #999;"),
+        h4("⏳ Siap untuk Analisis"),
+        p("Unggah file data (CSV, Excel, atau SPSS) atau masukkan data secara manual."),
+        p("Pilih jenis uji statistik yang diinginkan dan klik 'Jalankan Uji'."),
+        p("Anda juga dapat menganalisis data emisi gas rumah kaca dengan memilih opsi 'Gunakan Data Emisi'."),
+        p("Pastikan data yang diinput minimal terdiri dari 2 kolom numerik dan 5 baris untuk hasil analisis yang valid."),
         div(
             style = "margin-top: 30px;",
-            span("💡 Tips: ", style = "font-weight: bold; color: #007bff;"),
+            span("💡 Tips: ", style = "font-weight: bold;"),
             "Gunakan tombol 'Clear File' untuk beralih dari CSV ke input manual"
         )
     )

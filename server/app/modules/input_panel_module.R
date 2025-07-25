@@ -5,75 +5,77 @@
 input_panel_ui <- function(id) {
     ns <- NS(id)
 
-    wellPanel(
-        h4("Input Data"),
+    bslib::card(
+        bslib::card_header("Kontrol Input & Analisis"),
+        bslib::card_body(
 
-        # Test selection
-        create_test_selection(ns("test_type"), "sign"),
-        hr(),
+            # Test selection
+            create_test_selection(ns("test_type"), "sign"),
+            hr(),
 
-        # Emission data selection section
-        create_emission_data_section(
-            ns("emission_data_type"),
-            ns("emission_analysis_type"),
-            ns("emission_country1"),
-            ns("emission_country2"),
-            ns("emission_year1"),
-            ns("emission_year2"),
-            ns("use_emission_data")
-        ),
+            # Emission data selection section
+            create_emission_data_section(
+                ns("emission_data_type"),
+                ns("emission_analysis_type"),
+                ns("emission_country1"),
+                ns("emission_country2"),
+                ns("emission_year1"),
+                ns("emission_year2"),
+                ns("use_emission_data")
+            ),
 
-        # Data info display for emission data
-        conditionalPanel(
-            condition = paste0("output['", ns("show_emission_info"), "']"),
-            div(
-                h6("🌍 Data Emisi yang akan diproses:"),
-                verbatimTextOutput(ns("emission_data_info")),
-                style = get_info_box_style("data-info-box")
+            # Data info display for emission data
+            conditionalPanel(
+                condition = paste0("output['", ns("show_emission_info"), "']"),
+                div(
+                    h6("🌍 Data Emisi yang akan diproses:"),
+                    verbatimTextOutput(ns("emission_data_info")),
+                    style = get_info_box_style("data-info-box")
+                )
+            ),
+
+            # File upload section
+            conditionalPanel(
+                condition = paste0("!input['", ns("use_emission_data"), "']"),
+                create_file_upload_section(
+                    ns("file_csv"),
+                    ns("clear_file"),
+                    ns("download_template"),
+                    ns("file_status")
+                )
+            ),
+
+            # Data info display (only show when CSV is loaded)
+            conditionalPanel(
+                condition = paste0("output['", ns("show_csv_info"), "'] && !input['", ns("use_emission_data"), "']"),
+                div(
+                    h6("📊 Data yang akan diproses:"),
+                    verbatimTextOutput(ns("data_info")),
+                    style = get_info_box_style("data-info-box")
+                )
+            ),
+
+            # Manual input section
+            conditionalPanel(
+                condition = paste0("!input['", ns("use_emission_data"), "']"),
+                create_manual_input_section(
+                    ns("use_manual"),
+                    ns("sample1"),
+                    ns("sample2"),
+                    ns("test_type")
+                )
+            ),
+
+            # Alpha input
+            numericInput(ns("alpha"), "Tingkat Signifikansi (α):",
+                value = 0.05, min = 0.01, max = 0.1, step = 0.01
+            ),
+            br(),
+
+            # Run test button
+            actionButton(ns("run_test"), "🚀 Jalankan Uji",
+                class = "btn btn-primary btn-block btn-lg"
             )
-        ),
-
-        # File upload section
-        conditionalPanel(
-            condition = paste0("!input['", ns("use_emission_data"), "']"),
-            create_file_upload_section(
-                ns("file_csv"),
-                ns("clear_file"),
-                ns("download_template"),
-                ns("file_status")
-            )
-        ),
-
-        # Data info display (only show when CSV is loaded)
-        conditionalPanel(
-            condition = paste0("output['", ns("show_csv_info"), "'] && !input['", ns("use_emission_data"), "']"),
-            div(
-                h6("📊 Data yang akan diproses:"),
-                verbatimTextOutput(ns("data_info")),
-                style = get_info_box_style("data-info-box")
-            )
-        ),
-
-        # Manual input section
-        conditionalPanel(
-            condition = paste0("!input['", ns("use_emission_data"), "']"),
-            create_manual_input_section(
-                ns("use_manual"),
-                ns("sample1"),
-                ns("sample2"),
-                ns("test_type")
-            )
-        ),
-
-        # Alpha input
-        numericInput(ns("alpha"), "Tingkat Signifikansi (α):",
-            value = 0.05, min = 0.01, max = 0.1, step = 0.01
-        ),
-        br(),
-
-        # Run test button
-        actionButton(ns("run_test"), "🚀 Jalankan Uji",
-            class = "btn btn-primary btn-block btn-lg"
         )
     )
 }
