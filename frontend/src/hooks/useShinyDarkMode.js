@@ -56,6 +56,7 @@ const useShinyDarkMode = (options = {}) => {
     }
 
     try {
+      // Primary method: postMessage
       const message = { 
         type: 'DARK_MODE', 
         value: isDark,
@@ -65,12 +66,47 @@ const useShinyDarkMode = (options = {}) => {
       
       iframe.contentWindow.postMessage(message, shinyOrigin);
       log(`Sent dark mode message: ${isDark ? 'dark' : 'light'}`, message);
+      
+      // Fallback method: update iframe URL with dark mode parameter
+      updateIframeUrlWithDarkMode(iframe, isDark);
+      
       return true;
     } catch (error) {
-      log('Error sending message to Shiny:', error);
-      return false;
+      log('PostMessage failed, using URL fallback:', error);
+      // Fallback only
+      return updateIframeUrlWithDarkMode(iframe, isDark);
     }
   }, [shinyOrigin, log, globalContext]);
+
+  // Fallback method: update iframe URL with dark mode parameter
+  const updateIframeUrlWithDarkMode = useCallback((iframe, isDark) => {
+    try {
+      const currentSrc = iframe.src;
+      if (!currentSrc) return false;
+
+      const url = new URL(currentSrc);
+      url.searchParams.set('dark_mode', isDark ? '1' : '0');
+      url.searchParams.set('dm_sync', Date.now().toString()); // Force refresh
+      
+      // Store in localStorage for cross-origin persistence
+      try {
+        localStorage.setItem('komstat_dark_mode', isDark ? '1' : '0');
+      } catch (e) {
+        log('Could not save to localStorage:', e);
+      }
+      
+      // Only update if URL actually changed to avoid unnecessary reloads
+      if (iframe.src !== url.toString()) {
+        iframe.src = url.toString();
+        log(`Updated iframe URL with dark mode: ${isDark ? 'dark' : 'light'}`);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      log('URL fallback failed:', error);
+      return false;
+    }
+  }, [log]);
 
   // Function to request current dark mode state from Shiny
   const requestShinyReady = useCallback(() => {
@@ -183,6 +219,7 @@ const useShinyDarkMode = (options = {}) => {
     isDarkMode,
     handleIframeLoad,
     sendDarkModeToShiny,
+    updateIframeUrlWithDarkMode,
     requestShinyReady,
     isReady: isReadyRef.current,
     usingGlobalContext: !!globalContext

@@ -56,8 +56,43 @@ export const ShinyDarkModeProvider = ({ children }) => {
       };
 
       iframe.contentWindow.postMessage(message, iframeData.origin);
+      
+      // Also try to send via URL parameter as fallback for cross-origin issues
+      updateIframeUrlWithDarkMode(iframe, isDark);
+      
       return true;
     } catch (error) {
+      console.warn('[Shiny Dark Mode] PostMessage failed, trying URL fallback:', error);
+      // Fallback: try to reload iframe with dark mode parameter
+      return updateIframeUrlWithDarkMode(iframe, isDark);
+    }
+  };
+
+  // Fallback method: update iframe URL with dark mode parameter
+  const updateIframeUrlWithDarkMode = (iframe, isDark) => {
+    try {
+      const currentSrc = iframe.src;
+      if (!currentSrc) return false;
+
+      const url = new URL(currentSrc);
+      url.searchParams.set('dark_mode', isDark ? '1' : '0');
+      url.searchParams.set('dm_sync', Date.now().toString()); // Force refresh
+      
+      // Store in localStorage for cross-origin persistence
+      try {
+        localStorage.setItem('komstat_dark_mode', isDark ? '1' : '0');
+      } catch (e) {
+        console.warn('[Shiny Dark Mode] Could not save to localStorage:', e);
+      }
+      
+      // Only update if URL actually changed to avoid unnecessary reloads
+      if (iframe.src !== url.toString()) {
+        iframe.src = url.toString();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.warn('[Shiny Dark Mode] URL fallback failed:', error);
       return false;
     }
   };

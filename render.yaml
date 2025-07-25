@@ -24,6 +24,8 @@ services:
         value: 8000
       - key: API_HOST
         value: 0.0.0.0
+      - key: FRONTEND_URL
+        value: https://komstat-frontend.onrender.com
     healthCheckPath: /health
     plan: free
 
@@ -38,4 +40,6 @@ services:
         value: ./data
       - key: SHINY_PORT
         value: 3838
+      - key: FRONTEND_URL
+        value: https://komstat-frontend.onrender.com
     plan: free

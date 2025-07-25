@@ -948,16 +948,56 @@ ui <- fluidPage(
         let currentDarkMode = false;
         let communicationReady = false;
 
+        // Check URL parameters for dark mode on load
+        function checkUrlDarkMode() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const darkModeParam = urlParams.get('dark_mode');
+
+                if (darkModeParam !== null) {
+                    const isDarkMode = darkModeParam === '1' || darkModeParam === 'true';
+                    console.log('Dark mode detected from URL parameter:', isDarkMode);
+
+                    if (currentDarkMode !== isDarkMode) {
+                        currentDarkMode = isDarkMode;
+                        applyDarkMode(isDarkMode);
+                        // Store in localStorage for persistence
+                        try {
+                            localStorage.setItem('darkMode', isDarkMode ? '1' : '0');
+                        } catch (e) {
+                            console.warn('Could not save to localStorage:', e);
+                        }
+                    }
+                    return true;
+                }
+
+                // Fallback: check localStorage
+                try {
+                    const storedDarkMode = localStorage.getItem('darkMode');
+                    if (storedDarkMode !== null) {
+                        const isDarkMode = storedDarkMode === '1';
+                        console.log('Dark mode detected from localStorage:', isDarkMode);
+
+                        if (currentDarkMode !== isDarkMode) {
+                            currentDarkMode = isDarkMode;
+                            applyDarkMode(isDarkMode);
+                        }
+                        return true;
+                    }
+                } catch (e) {
+                    console.warn('Could not read from localStorage:', e);
+                }
+            } catch (error) {
+                console.warn('Error checking URL dark mode parameter:', error);
+            }
+            return false;
+        }
+
         // Initialize dark mode communication
         function initializeDarkModeListener() {
             window.addEventListener('message', function(event) {
                 // Security check: only accept messages from trusted frontend origins
-                const trustedOrigins = [
-                    'http://localhost:3000',
-                    'http://127.0.0.1:3000',
-                    'http://localhost:5173', // Vite dev server
-                    'http://127.0.0.1:5173'  // Vite dev server
-                ];
+                const trustedOrigins = getTrustedOrigins();
 
                 if (!trustedOrigins.includes(event.origin)) {
                     console.log('Ignored message from untrusted origin:', event.origin);
@@ -971,6 +1011,41 @@ ui <- fluidPage(
             });
 
             console.log('Dark mode message listener initialized');
+        }
+
+        // Get trusted origins dynamically based on environment
+        function getTrustedOrigins() {
+            const localOrigins = [
+                'http://localhost:3000',
+                'http://127.0.0.1:3000',
+                'http://localhost:5173', // Vite dev server
+                'http://127.0.0.1:5173'  // Vite dev server
+            ];
+
+            const productionOrigins = [
+                'https://komstat-frontend.onrender.com',
+                'https://komstat-dashboard-final-banget.onrender.com' // Alternative domain pattern
+            ];
+
+            // Try to get frontend URL from R environment variable
+            try {
+                if (typeof Shiny !== 'undefined' && Shiny.shinyapp && Shiny.shinyapp.config) {
+                    const frontendUrl = Shiny.shinyapp.config.frontendUrl;
+                    if (frontendUrl && !productionOrigins.includes(frontendUrl)) {
+                        productionOrigins.push(frontendUrl);
+                    }
+                }
+            } catch (error) {
+                console.log('Could not read frontend URL from Shiny config:', error);
+            }
+
+            // Check if we're in production environment
+            const isProduction = window.location.hostname.includes('onrender.com') ||
+                                 window.location.protocol === 'https:';
+
+            const allOrigins = isProduction ? [...localOrigins, ...productionOrigins] : localOrigins;
+            console.log('Trusted origins:', allOrigins);
+            return allOrigins;
         }
 
         // Handle incoming messages from React frontend
@@ -996,6 +1071,13 @@ ui <- fluidPage(
             if (currentDarkMode !== isDarkMode) {
                 currentDarkMode = isDarkMode;
                 applyDarkMode(isDarkMode);
+
+                // Store in localStorage for persistence across reloads
+                try {
+                    localStorage.setItem('darkMode', isDarkMode ? '1' : '0');
+                } catch (e) {
+                    console.warn('Could not save to localStorage:', e);
+                }
             }
         }
 
@@ -1049,12 +1131,7 @@ ui <- fluidPage(
         function requestInitialDarkMode() {
             console.log('Shiny app loaded, requesting dark mode state from parent...');
 
-            const trustedParents = [
-                'http://localhost:3000',
-                'http://127.0.0.1:3000',
-                'http://localhost:5173',
-                'http://127.0.0.1:5173'
-            ];
+            const trustedParents = getTrustedOrigins();
 
             trustedParents.forEach(origin => {
                 sendReadyMessage(origin);
@@ -1064,10 +1141,14 @@ ui <- fluidPage(
         // Initialize when DOM is loaded
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function() {
+                // Check URL parameter first
+                checkUrlDarkMode();
                 initializeDarkModeListener();
                 setTimeout(requestInitialDarkMode, 100);
             });
         } else {
+            // Check URL parameter first
+            checkUrlDarkMode();
             initializeDarkModeListener();
             setTimeout(requestInitialDarkMode, 100);
         }
@@ -1077,6 +1158,11 @@ ui <- fluidPage(
             if (!communicationReady) {
                 setTimeout(requestInitialDarkMode, 200);
             }
+        });
+
+        // Listen for URL changes (for SPAs)
+        window.addEventListener('popstate', function() {
+            checkUrlDarkMode();
         });
     ")),
 

@@ -24,6 +24,17 @@ const DarkModeTestComponent = () => {
     enableLogging: true
   });
 
+  const [localStorageValue, setLocalStorageValue] = React.useState(null);
+
+  React.useEffect(() => {
+    try {
+      const stored = localStorage.getItem('komstat_dark_mode');
+      setLocalStorageValue(stored);
+    } catch (e) {
+      setLocalStorageValue('not available');
+    }
+  }, [isDarkMode]);
+
   const resolvedMode = systemMode || mode;
 
   return (
@@ -49,6 +60,11 @@ const DarkModeTestComponent = () => {
             color={usingGlobalContext ? 'info' : 'default'}
             size="small"
           />
+          <Chip 
+            label={`LocalStorage: ${localStorageValue || 'none'}`}
+            color={localStorageValue ? 'success' : 'default'}
+            size="small"
+          />
         </Box>
 
         <Alert 
@@ -59,6 +75,10 @@ const DarkModeTestComponent = () => {
             <strong>Current Status:</strong> {resolvedMode === 'dark' ? 'Dark' : 'Light'} mode active
             {isReady && ' • Shiny communication established'}
             {usingGlobalContext && ' • Using global context'}
+            <br />
+            <strong>Cross-origin support:</strong> URL parameters + localStorage fallback enabled
+            <br />
+            <strong>Production domains:</strong> komstat-frontend.onrender.com supported
           </Typography>
         </Alert>
       </CardContent>
