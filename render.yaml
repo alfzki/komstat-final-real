@@ -25,7 +25,7 @@ services:
       - key: API_HOST
         value: 0.0.0.0
     healthCheckPath: /health
-    plan: starter
+    plan: free
 
   # R Shiny App - Web Service
   - type: web
@@ -38,4 +38,4 @@ services:
         value: ./data
       - key: SHINY_PORT
         value: 3838
-    plan: starter
+    plan: free
