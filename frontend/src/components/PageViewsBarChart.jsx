@@ -4,6 +4,7 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { useTheme } from '@mui/material/styles';
+import config from '../config';
 
 export default function PageViewsBarChart({ yearRange = [2013, 2023], countryCode = 'WLD' }) {
   const theme = useTheme();
@@ -14,7 +15,7 @@ export default function PageViewsBarChart({ yearRange = [2013, 2023], countryCod
   const fetchData = React.useCallback(async () => {
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/statistics?country_code=${countryCode}&start_year=${yearRange[0]}&end_year=${yearRange[1]}`
+        `${config.API_BASE_URL}/statistics?country_code=${countryCode}&start_year=${yearRange[0]}&end_year=${yearRange[1]}`
       );
       if (!res.ok) throw new Error('Failed fetch');
       const json = await res.json();

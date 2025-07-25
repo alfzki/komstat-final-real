@@ -15,11 +15,29 @@ calculate_mode <- function(x) {
   ux[which.max(tabulate(match(x_cleaned, ux)))]
 }
 
+# Get data directory from environment variable
+data_dir <- Sys.getenv("DATA_DIR", "./data")
+
 # Muat data saat startup
-global_data <- fromJSON("data/global_complete_data.json")
-country_meta <- read_csv("data/TOTAL-Greenhouse-Gases/data_total_greenhouse.csv")
+global_data <- fromJSON(file.path(data_dir, "global_complete_data.json"))
+country_meta <- read_csv(file.path(data_dir, "TOTAL-Greenhouse-Gases", "data_total_greenhouse.csv"))
 
 #* @apiTitle Greenhouse Gas Emissions API
+
+#* Health check endpoint
+#* @get /health
+function() {
+  data_dir <- Sys.getenv("DATA_DIR", "./data")
+  list(
+    status = "healthy",
+    timestamp = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+    data_dir = data_dir,
+    data_loaded = list(
+      global_data_countries = length(names(global_data)),
+      country_meta_rows = nrow(country_meta)
+    )
+  )
+}
 
 #* Mengembalikan daftar negara
 #* @get /countries
@@ -161,7 +179,8 @@ function(year, gas_type = "total") {
 #* Get country-code-and-numeric.json
 #* @get /country-code-and-numeric.json
 function() {
-  return(fromJSON("data/country-code-and-numeric.json"))
+  data_dir <- Sys.getenv("DATA_DIR", "./data")
+  return(fromJSON(file.path(data_dir, "country-code-and-numeric.json")))
 }
 
 #* Calculate growth percentage

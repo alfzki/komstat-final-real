@@ -1,0 +1,58 @@
+# Gunakan base image yang sudah dikonfigurasi untuk binary
+FROM rocker/r-ubuntu:22.04
+
+# Set environment variables
+ENV R_REMOTES_NO_ERRORS_FROM_WARNINGS=true
+
+
+
+# Install system dependencies yang lebih LENGKAP untuk Tidyverse dan paket data science
+# Ini adalah perubahan kunci untuk memaksimalkan penggunaan binary
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
+    libfontconfig1-dev \
+    libcairo2-dev \
+    libgit2-dev \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    libfreetype6-dev \
+    libpng-dev \
+    libtiff5-dev \
+    libjpeg-dev \
+    libudunits2-dev \
+    gdal-bin \
+    libgdal-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install R packages menggunakan apt untuk binary packages r2u
+# r2u menyediakan packages R sebagai .deb packages
+RUN apt-get update && apt-get install -y \
+    r-cran-plumber \
+    r-cran-jsonlite \
+    r-cran-dplyr \
+    r-cran-readr \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Salin kode aplikasi HANYA setelah dependensi terinstall
+COPY api.R start-api.R ./
+COPY data/ ./data/
+
+# Make the startup script executable
+RUN chmod +x start-api.R
+
+# Expose the API port
+EXPOSE 8000
+
+# Set environment variable defaults
+ENV DATA_DIR=./data
+ENV API_PORT=8000
+ENV API_HOST=0.0.0.0
+
+# Run the Plumber API using the startup script
+CMD ["Rscript", "start-api.R"]

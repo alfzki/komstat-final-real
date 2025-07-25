@@ -1,12 +1,13 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShinyDarkModeContext } from '../contexts/ShinyDarkModeContext';
+import config from '../config';
 
 /**
  * Enhanced custom hook for synchronizing dark mode between React frontend and Shiny iframe
  * Uses the global ShinyDarkModeContext for centralized state management
  * 
  * @param {Object} options - Configuration options
- * @param {string} options.shinyOrigin - Shiny app origin URL (default: 'http://127.0.0.1:3838')
+ * @param {string} options.shinyOrigin - Shiny app origin URL (default: from config)
  * @param {number} options.loadDelay - Delay after iframe load (default: 500ms)
  * @param {boolean} options.enableLogging - Enable console logging (default: true)
  * @param {boolean} options.useGlobalContext - Use global context for centralized management (default: true)
@@ -15,7 +16,7 @@ import { useShinyDarkModeContext } from '../contexts/ShinyDarkModeContext';
  */
 const useShinyDarkMode = (options = {}) => {
   const {
-    shinyOrigin = 'http://127.0.0.1:3838',
+    shinyOrigin = config.SHINY_BASE_URL,
     loadDelay = 500,
     enableLogging = false,
     useGlobalContext = true

@@ -18,11 +18,12 @@ import {
   Grid,
 } from '@mui/material';
 import { Gauge, gaugeClasses } from '@mui/x-charts/Gauge';
+import config from '../config';
 
 
 
 
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8000';
+const API_BASE = config.API_BASE_URL;
 
 const yearMarks = [
   { value: 1970, label: '1970' },

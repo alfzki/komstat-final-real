@@ -1,0 +1,10 @@
+# Server .dockerignore
+.git
+.gitignore
+.env
+.env.local
+.env.production
+README.md
+Dockerfile*
+.dockerignore
+run_both.R

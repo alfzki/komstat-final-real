@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef } from 'react';
 import { useColorScheme } from '@mui/material/styles';
+import config from '../config';
 
 const ShinyDarkModeContext = createContext();
 
@@ -16,7 +17,7 @@ export const ShinyDarkModeProvider = ({ children }) => {
   const isDarkMode = resolvedMode === 'dark';
 
   // Register an iframe for dark mode updates
-  const registerIframe = (iframeRef, origin = 'http://127.0.0.1:3838') => {
+  const registerIframe = (iframeRef, origin = config.SHINY_BASE_URL) => {
     const iframeData = { ref: iframeRef, origin };
     iframeRefsRef.current.add(iframeData);
 

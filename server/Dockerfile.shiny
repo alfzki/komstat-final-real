@@ -1,0 +1,73 @@
+# Use the rocker/r-ubuntu base image untuk binary packages
+FROM rocker/r-ubuntu:22.04
+
+# Set environment variables
+ENV R_REMOTES_NO_ERRORS_FROM_WARNINGS=true
+
+# Install system dependencies dan Shiny Server
+RUN apt-get update && apt-get install -y \
+    gdebi-core \
+    pandoc \
+    pandoc-citeproc \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
+    libfontconfig1-dev \
+    libcairo2-dev \
+    libxt-dev \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Shiny Server
+RUN wget --no-verbose https://download3.rstudio.org/ubuntu-18.04/x86_64/shiny-server-1.5.20.1002-amd64.deb && \
+    gdebi --non-interactive shiny-server-1.5.20.1002-amd64.deb && \
+    rm shiny-server-1.5.20.1002-amd64.deb
+
+# Install R packages menggunakan apt untuk binary packages r2u
+# r2u menyediakan packages R sebagai .deb packages
+RUN apt-get update && apt-get install -y \
+    r-cran-shiny \
+    r-cran-shinyjs \
+    r-cran-bslib \
+    r-cran-readxl \
+    r-cran-writexl \
+    r-cran-haven \
+    r-cran-dt \
+    r-cran-plotly \
+    r-cran-dplyr \
+    r-cran-readr \
+    r-cran-jsonlite \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create shiny user dan setup direktori (jika belum ada)
+RUN (groupadd -r shiny || true) && \
+    (useradd -r -g shiny shiny || true) && \
+    mkdir -p /var/log/shiny-server && \
+    mkdir -p /srv/shiny-server && \
+    mkdir -p /var/lib/shiny-server && \
+    chown shiny:shiny /var/log/shiny-server && \
+    chown shiny:shiny /srv/shiny-server && \
+    chown shiny:shiny /var/lib/shiny-server
+
+# Set working directory
+WORKDIR /srv/shiny-server
+
+# Remove default shiny app
+RUN rm -rf /srv/shiny-server/*
+
+# Copy the Shiny app and data
+COPY app/ ./
+COPY data/ ./data/
+
+# Set environment variables
+ENV DATA_DIR=./data
+ENV SHINY_PORT=3838
+
+# Make sure the app is owned by shiny user
+RUN chown -R shiny:shiny /srv/shiny-server
+
+# Expose Shiny port
+EXPOSE 3838
+
+# Run Shiny Server
+CMD ["/usr/bin/shiny-server"]

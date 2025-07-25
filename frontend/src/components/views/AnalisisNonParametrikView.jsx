@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, Grid, Box, Typography } from '@mui/material';
 import useShinyDarkMode from '../../hooks/useShinyDarkMode';
+import config from '../../config';
 
 const AnalisisNonparametrikView = () => {
   const {
@@ -10,7 +11,7 @@ const AnalisisNonparametrikView = () => {
     isReady,
     usingGlobalContext
   } = useShinyDarkMode({
-    shinyOrigin: 'http://127.0.0.1:3838',
+    shinyOrigin: config.SHINY_BASE_URL,
     enableLogging: false
   });
 
@@ -34,7 +35,7 @@ const AnalisisNonparametrikView = () => {
               <iframe
                 ref={iframeRef}
                 id="shiny-iframe"
-                src="http://127.0.0.1:3838"
+                src={config.SHINY_BASE_URL}
                 title="Analisis Nonparametrik - R Shiny"
                 onLoad={handleIframeLoad}
                 style={{

@@ -4,7 +4,7 @@
 #' Get available emission data types
 #' @return List of emission data types with display names and file paths
 get_emission_data_types <- function() {
-    data_dir <- file.path("..", "data")
+    data_dir <- Sys.getenv("DATA_DIR", "../data")
     
     list(
         "CH4" = list(

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import config from '../config';
 
 export interface CountryItem {
   name: string;
@@ -12,7 +13,7 @@ export function useCountries() {
 
   useEffect(() => {
     setLoading(true);
-    fetch('http://127.0.0.1:8000/countries')
+    fetch(`${config.API_BASE_URL}/countries`)
       .then(res => res.json())
       .then(data => {
         if (data && Array.isArray(data.countries)) {

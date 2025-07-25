@@ -1,0 +1,41 @@
+services:
+  # React Frontend - Static Site
+  - type: web
+    name: komstat-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://komstat-api.onrender.com
+      - key: REACT_APP_SHINY_URL
+        value: https://komstat-shiny.onrender.com
+
+  # R Plumber API - Web Service
+  - type: web
+    name: komstat-api
+    env: docker
+    dockerfilePath: ./server/Dockerfile.plumber
+    dockerContext: ./server
+    envVars:
+      - key: DATA_DIR
+        value: ./data
+      - key: API_PORT
+        value: 8000
+      - key: API_HOST
+        value: 0.0.0.0
+    healthCheckPath: /health
+    plan: starter
+
+  # R Shiny App - Web Service
+  - type: web
+    name: komstat-shiny
+    env: docker
+    dockerfilePath: ./server/Dockerfile.shiny
+    dockerContext: ./server
+    envVars:
+      - key: DATA_DIR
+        value: ./data
+      - key: SHINY_PORT
+        value: 3838
+    plan: starter

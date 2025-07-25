@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ReactCountryFlag from 'react-country-flag';
+import config from '../../config';
 import {
   GlobeFlag,
 } from '../components/CustomIcons';
@@ -142,7 +143,7 @@ class EmissionDataManager {
     }
 
     try {
-      const codesRes = await fetch('http://localhost:8000/country-code-and-numeric.json');
+      const codesRes = await fetch(`${config.API_BASE_URL}/country-code-and-numeric.json`);
       const codes = await codesRes.json();
       const countryMap = {};
       this.alpha3ToAlpha2 = {}; // Reset and populate the mapping
@@ -154,7 +155,7 @@ class EmissionDataManager {
         }
       });
 
-      const emissionsRes = await fetch('http://localhost:8000/global-complete-data.json');
+      const emissionsRes = await fetch(`${config.API_BASE_URL}/global-complete-data.json`);
       const emissionsData = await emissionsRes.json();
 
       const transformed = [];

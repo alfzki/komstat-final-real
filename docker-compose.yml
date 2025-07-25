@@ -1,0 +1,42 @@
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_API_URL=http://localhost:8000
+        - REACT_APP_SHINY_URL=http://localhost:3838
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+      - shiny
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.plumber
+    ports:
+      - "8000:8000"
+    environment:
+      - DATA_DIR=./data
+      - API_PORT=8000
+    volumes:
+      - ./server/data:/app/data:ro
+
+  shiny:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.shiny
+    ports:
+      - "3838:3838"
+    environment:
+      - DATA_DIR=./data
+      - SHINY_PORT=3838
+    volumes:
+      - ./server/data:/srv/shiny-server/data:ro
+
+networks:
+  default:
+    name: komstat-dashboard-network

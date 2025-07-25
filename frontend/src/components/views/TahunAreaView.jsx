@@ -8,6 +8,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import InputAdornment from '@mui/material/InputAdornment';
 import PrintIcon from '@mui/icons-material/Print';
+import config from '../../config';
 
 import StatCard from '../StatCard';
 import SessionsChart from '../SessionsChart';
@@ -72,7 +73,7 @@ export default function TahunAreaView({ stats, loading, error, country, setCount
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/countries');
+        const response = await fetch(`${config.API_BASE_URL}/countries`);
         const data = await response.json();
         setCountries(data.countries || []);
       } catch (error) {
